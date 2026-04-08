@@ -1,29 +1,25 @@
 manifestVersion: 1.1
-id: super-monero-enhanced
+id: super-monero-p2pool-mini
 category: utilities
-name: SuperMonero Enhanced
+name: SuperMonero P2Pool Mini
 icon: https://raw.githubusercontent.com/olivierpietro996-bot/SuperMonero/main/brainchainz-monero-superbrain/icon.png
-version: "1.1.0"
-tagline: Monero P2Pool Mini mining con 1% donazione allo sviluppatore
+version: "1.2.0"
+tagline: Mining decentralizzato Monero con P2Pool Mini
 description: >-
-  Versione modificata e migliorata di Monero Superbrain.
-  Include nodo Monero + P2Pool Mini + XMRig con dashboard web.
-  Questa fork include **1% di hashrate come donazione** allo sviluppatore (olivierpietro996-bot) per supportare aggiornamenti e manutenzione.
-  Trasparente: il devfee totale è 1% (invece di 0%).
+  Versione pulita e ottimizzata di SuperMonero per Umbrel.
+  Include: Nodo Monero + P2Pool Mini + XMRig + Dashboard web moderna.
+  Nessun devfee nascosto. Ideale per Raspberry Pi, mini PC e Umbrel Home.
+  Mina in modo completamente decentralizzato e tieni traccia dell'hashrate in tempo reale.
 developer: olivierpietro996-bot
 website: https://github.com/olivierpietro996-bot/SuperMonero
 repo: https://github.com/olivierpietro996-bot/SuperMonero
 support: https://github.com/olivierpietro996-bot/SuperMonero/issues
 port: 3000
-dependencies:
-  - monero
 gallery:
   - https://raw.githubusercontent.com/brainchainz/Monero-Superbrain/main/brainchainz-monero-superbrain/gallery/1.png
   - https://raw.githubusercontent.com/brainchainz/Monero-Superbrain/main/brainchainz-monero-superbrain/gallery/2.png
-  - https://raw.githubusercontent.com/brainchainz/Monero-Superbrain/main/brainchainz-monero-superbrain/gallery/3.png
-  - https://raw.githubusercontent.com/brainchainz/Monero-Superbrain/main/brainchainz-monero-superbrain/gallery/4.png
-path: ""
-defaultUsername: ""
-defaultPassword: ""
 releaseNotes: >-
-  v1.1.0: Aggiunto 1% donazione hashrate allo sviluppatore + preparata per dashboard migliorata.
+  v1.2.0:
+  - Nuovo nome: SuperMonero P2Pool Mini
+  - Dashboard preparata per restyling moderno
+  - Donate-level rimosso (nessuna donazione)
