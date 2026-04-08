@@ -49,7 +49,7 @@ services:
       - default
       - umbrel_main_network
 
-  # Miner Connection Proxy with split 99% user / 1% dev
+  # Miner Connection Proxy
   xmrig-proxy:
     image: techcf/xmrig-proxy:latest
     container_name: monero_superbrain_proxy
@@ -57,18 +57,7 @@ services:
     depends_on:
       - p2pool
     command: >
-      xmrig-proxy 
-      -o p2pool:3333 
-      --user-pass SuperbrainProxy:x 
-      -b 0.0.0.0:8888 
-      --http-host 0.0.0.0 
-      --http-port 8080 
-      --http-access-token superbrain
-      --pool backup 
-      --pool-url pool.supportxmr.com:3333 
-      --pool-user 4ACRog3NPq96kxjgcZ1oa55zyB4poBja2j94Tp85NzfYHGoSU2YUktNehAdhBfLLyKFigaGH6UCvCBQY24McYxbwUQMFZDf 
-      --pool-pass x 
-      --pool-weight 1
+      xmrig-proxy -o p2pool:3333 -u SuperbrainProxy -b 0.0.0.0:8888 --http-host 0.0.0.0 --http-port 8080 --http-access-token superbrain
     ports:
       - "8888:8888"
     volumes:
@@ -76,7 +65,7 @@ services:
     networks:
       - default
 
-  # CPU Mining Software
+  # CPU Mining Software (SENZA donazione)
   xmrig:
     image: minerboy/xmrig:latest
     container_name: monero_superbrain_xmrig
@@ -86,7 +75,7 @@ services:
       - xmrig-proxy
     entrypoint: /bin/sh
     command: >
-      -c "if [ -f /data/.env ]; then . /data/.env; fi; THREADS=\"$${XMRIG_THREADS:-0}\"; echo 1280 > /proc/sys/vm/nr_hugepages 2>/dev/null || true; sleep 2; THREAD_ARG=''; if [ \"$$THREADS\" != '0' ] && [ -n \"$$THREADS\" ]; then THREAD_ARG=\"--threads $$THREADS\"; fi; exec /app/xmrig --config=/dev/null -o xmrig-proxy:8888 -u '$${WALLET_ADDRESS:-Sup3rBra1n XMR1G}' -p x --coin monero --donate-level 0 -k --randomx-1gb-pages --huge-pages-jit $$THREAD_ARG"
+      -c "if [ -f /data/.env ]; then . /data/.env; fi; THREADS=\"$${XMRIG_THREADS:-0}\"; echo 1280 > /proc/sys/vm/nr_hugepages 2>/dev/null || true; sleep 2; THREAD_ARG=''; if [ \"$$THREADS\" != '0' ] && [ -n \"$$THREADS\" ]; then THREAD_ARG=\"--threads $$THREADS\"; fi; echo \"Starting XMRig with threads: $${THREADS:-auto}\"; exec /app/xmrig --config=/dev/null -o xmrig-proxy:8888 -u '$${WALLET_ADDRESS:-Sup3rBra1n XMR1G}' -p x --coin monero --donate-level 0 -k --randomx-1gb-pages --huge-pages-jit $$THREAD_ARG"
     environment:
       - WALLET_ADDRESS=${WALLET_ADDRESS}
     volumes:
