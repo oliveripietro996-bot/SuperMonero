@@ -8,12 +8,12 @@ services:
     networks:
       - default
 
-  # Dashboard Moderna e Bella
+  # Dashboard semplice e bella (senza cartelle extra)
   dashboard:
     image: nginx:alpine
     restart: always
     volumes:
-      - ${APP_DATA_DIR}/www:/usr/share/nginx/html:ro
+      - ${APP_DATA_DIR}/dashboard:/usr/share/nginx/html:ro
     networks:
       - default
 
@@ -23,11 +23,10 @@ services:
     entrypoint: /bin/sh
     command: >
       -c "WALLET=\"$${WALLET_ADDRESS:-43sEimq64TtLoBaEzzxf7wVd4XcZPuGtNRP7zhT7WAgB3th9dvCrJMad99pZNKBRDmJXXXUxeZie7W5tsm7TWVrPHbxvins}\"; 
-          CHAIN=\"$${P2POOL_CHAIN:---mini}\"; 
           exec p2pool --wallet $$WALLET --host monero_monerod_1 --rpc-port 18081 --zmq-port 18083 
           --stratum 0.0.0.0:3333 --p2p 0.0.0.0:37889 
           --addpeers 65.21.227.114:37888,node.sethforprivacy.com:37888 
-          --loglevel 3 $$CHAIN"
+          --loglevel 3 --mini"
     volumes:
       - ${APP_DATA_DIR}/p2pool:/data
     networks:
@@ -55,7 +54,7 @@ services:
           sleep 2; 
           THREAD_ARG=''; 
           if [ \"$$THREADS\" != '0' ]; then THREAD_ARG=\"--threads $$THREADS\"; fi; 
-          exec /app/xmrig --config=/dev/null -o xmrig-proxy:8888 -u '$${WALLET_ADDRESS:-Sup3rBra1n}' 
+          exec /app/xmrig -o xmrig-proxy:8888 -u '$${WALLET_ADDRESS:-Sup3rBra1n}' 
           -p x --coin monero --donate-level 0 -k --randomx-1gb-pages --huge-pages-jit $$THREAD_ARG"
     volumes:
       - ${APP_DATA_DIR}:/data
