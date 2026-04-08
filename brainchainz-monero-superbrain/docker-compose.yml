@@ -30,10 +30,9 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${APP_DATA_DIR:-/data}:/data
-      # Mount Umbrel's Monero app data to read RPC credentials
       - /home/umbrel/umbrel/app-data/monero:/home/umbrel/umbrel/app-data/monero:ro
 
-  # Decentralized Mining Pool
+  # Decentralized Mining Pool (P2Pool Mini)
   p2pool:
     image: sethsimmons/p2pool:latest
     container_name: monero_superbrain_p2pool
@@ -66,7 +65,7 @@ services:
     networks:
       - default
 
-  # CPU Mining Software
+  # CPU Mining Software (con 1% donazione allo sviluppatore)
   xmrig:
     image: minerboy/xmrig:latest
     container_name: monero_superbrain_xmrig
@@ -76,7 +75,7 @@ services:
       - xmrig-proxy
     entrypoint: /bin/sh
     command: >
-      -c "if [ -f /data/.env ]; then . /data/.env; fi; THREADS=\"$${XMRIG_THREADS:-0}\"; echo 1280 > /proc/sys/vm/nr_hugepages 2>/dev/null; echo 3 > /proc/sys/vm/nr_hugepages_mempolicy 2>/dev/null; sleep 2; rm -f /etc/xmrig/config.json 2>/dev/null; THREAD_ARG=''; if [ \"$$THREADS\" != '0' ] && [ -n \"$$THREADS\" ]; then THREAD_ARG=\"--threads $$THREADS\"; fi; echo \"Starting XMRig with threads: $${THREADS:-auto}\"; exec /app/xmrig --config=/dev/null -o xmrig-proxy:8888 -u 'Sup3rBra1n XMR1G' -p x --coin monero --donate-level 0 -k --randomx-1gb-pages --huge-pages-jit $$THREAD_ARG"
+      -c "if [ -f /data/.env ]; then . /data/.env; fi; THREADS=\"$${XMRIG_THREADS:-0}\"; echo 1280 > /proc/sys/vm/nr_hugepages 2>/dev/null; echo 3 > /proc/sys/vm/nr_hugepages_mempolicy 2>/dev/null; sleep 2; rm -f /etc/xmrig/config.json 2>/dev/null; THREAD_ARG=''; if [ \"$$THREADS\" != '0' ] && [ -n \"$$THREADS\" ]; then THREAD_ARG=\"--threads $$THREADS\"; fi; echo \"Starting XMRig with threads: $${THREADS:-auto}\"; exec /app/xmrig --config=/dev/null -o xmrig-proxy:8888 -u 'Sup3rBra1n XMR1G' -p x --coin monero --donate-level 1 -k --randomx-1gb-pages --huge-pages-jit $$THREAD_ARG"
     volumes:
       - ${APP_DATA_DIR:-/data}:/data
     networks:
