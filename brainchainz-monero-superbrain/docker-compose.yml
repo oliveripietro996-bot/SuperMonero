@@ -1,5 +1,5 @@
 services:
-  # Umbrel App Proxy (Required for Auth & Tor)
+  # Umbrel App Proxy
   app_proxy:
     image: getumbrel/app-proxy:1.0.0
     container_name: monero_superbrain_app_proxy
@@ -12,25 +12,22 @@ services:
     networks:
       - default
 
-  # Web Dashboard & API Proxy
+  # Nuova Dashboard Moderna (HTML + Tailwind + Chart.js)
   dashboard:
-    image: sirjamzalot/monero-superbrain-dashboard:latest
+    image: nginx:alpine
     container_name: monero_superbrain_dashboard
     restart: always
+    volumes:
+      - ${APP_DATA_DIR:-/data}/dashboard:/usr/share/nginx/html:ro
+      - ./dashboard/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     environment:
       - APP_DATA_DIR=${APP_DATA_DIR:-/data}
-      - APP_MONERO_NODE_IP=${APP_MONERO_NODE_IP:-monero_monerod_1}
-      - APP_MONERO_RPC_PORT=${APP_MONERO_RPC_PORT:-18081}
-      - APP_MONERO_ZMQ_PORT=${APP_MONERO_ZMQ_PORT:-18083}
-      - APP_MONERO_RPC_USER=${APP_MONERO_RPC_USER:-monero}
-      - APP_MONERO_RPC_PASS=${APP_MONERO_RPC_PASS:-monero}
     networks:
       - default
       - umbrel_main_network
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-      - ${APP_DATA_DIR:-/data}:/data
-      - /home/umbrel/umbrel/app-data/monero:/home/umbrel/umbrel/app-data/monero:ro
+    depends_on:
+      - p2pool
+      - xmrig-proxy
 
   # Decentralized Mining Pool (P2Pool Mini)
   p2pool:
@@ -39,7 +36,7 @@ services:
     restart: always
     entrypoint: /bin/sh
     command: >
-      -c "if [ -f /data/.env ]; then . /data/.env; fi; WALLET=\"$${WALLET_ADDRESS:-43sEimq64TtLoBaEzzxf7wVd4XcZPuGtNRP7zhT7WAgB3th9dvCrJMad99pZNKBRDmJXXXUxeZie7W5tsm7TWVrPHbxvins}\"; CHAIN=\"$${P2POOL_CHAIN:---mini}\"; echo \"Starting P2Pool with wallet: $$WALLET...\"; exec p2pool --wallet $$WALLET --host ${APP_MONERO_NODE_IP:-monero_monerod_1} --rpc-port ${APP_MONERO_RPC_PORT:-18081} --zmq-port ${APP_MONERO_ZMQ_PORT:-18083} --stratum 0.0.0.0:3333 --p2p 0.0.0.0:37889 --addpeers 65.21.227.114:37888,node.sethforprivacy.com:37888 --loglevel 3 $$CHAIN --rpc-login ${APP_MONERO_RPC_USER:-monero}:${APP_MONERO_RPC_PASS:-monero}"
+      -c "if [ -f /data/.env ]; then . /data/.env; fi; WALLET=\"$${WALLET_ADDRESS:-43sEimq64TtLoBaEzzxf7wVd4XcZPuGtNRP7zhT7WAgB3th9dvCrJMad99pZNKBRDmJXXXUxeZie7W5tsm7TWVrPHbxvins}\"; CHAIN=\"$${P2POOL_CHAIN:---mini}\"; exec p2pool --wallet $$WALLET --host ${APP_MONERO_NODE_IP:-monero_monerod_1} --rpc-port ${APP_MONERO_RPC_PORT:-18081} --zmq-port ${APP_MONERO_ZMQ_PORT:-18083} --stratum 0.0.0.0:3333 --p2p 0.0.0.0:37889 --addpeers 65.21.227.114:37888,node.sethforprivacy.com:37888 --loglevel 3 $$CHAIN --rpc-login ${APP_MONERO_RPC_USER:-monero}:${APP_MONERO_RPC_PASS:-monero}"
     ports:
       - "37889:37889"
       - "3333:3333"
@@ -65,7 +62,7 @@ services:
     networks:
       - default
 
-  # CPU Mining Software (SENZA donazione)
+  # CPU Mining Software (senza donazione)
   xmrig:
     image: minerboy/xmrig:latest
     container_name: monero_superbrain_xmrig
@@ -75,7 +72,7 @@ services:
       - xmrig-proxy
     entrypoint: /bin/sh
     command: >
-      -c "if [ -f /data/.env ]; then . /data/.env; fi; THREADS=\"$${XMRIG_THREADS:-0}\"; echo 1280 > /proc/sys/vm/nr_hugepages 2>/dev/null || true; sleep 2; THREAD_ARG=''; if [ \"$$THREADS\" != '0' ] && [ -n \"$$THREADS\" ]; then THREAD_ARG=\"--threads $$THREADS\"; fi; echo \"Starting XMRig with threads: $${THREADS:-auto}\"; exec /app/xmrig --config=/dev/null -o xmrig-proxy:8888 -u '$${WALLET_ADDRESS:-Sup3rBra1n XMR1G}' -p x --coin monero --donate-level 0 -k --randomx-1gb-pages --huge-pages-jit $$THREAD_ARG"
+      -c "if [ -f /data/.env ]; then . /data/.env; fi; THREADS=\"$${XMRIG_THREADS:-0}\"; echo 1280 > /proc/sys/vm/nr_hugepages 2>/dev/null || true; sleep 2; THREAD_ARG=''; if [ \"$$THREADS\" != '0' ] && [ -n \"$$THREADS\" ]; then THREAD_ARG=\"--threads $$THREADS\"; fi; exec /app/xmrig --config=/dev/null -o xmrig-proxy:8888 -u '$${WALLET_ADDRESS:-Sup3rBra1n XMR1G}' -p x --coin monero --donate-level 0 -k --randomx-1gb-pages --huge-pages-jit $$THREAD_ARG"
     environment:
       - WALLET_ADDRESS=${WALLET_ADDRESS}
     volumes:
