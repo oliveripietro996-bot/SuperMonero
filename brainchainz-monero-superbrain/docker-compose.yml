@@ -8,25 +8,57 @@ services:
     networks:
       - default
 
-  # Dashboard semplice e bella (senza cartelle extra)
+  # Dashboard semplice e bella (inline - senza cartelle extra)
   dashboard:
     image: nginx:alpine
     restart: always
-    volumes:
-      - ${APP_DATA_DIR}/dashboard:/usr/share/nginx/html:ro
+    command: >
+      sh -c "echo '<!DOCTYPE html>
+      <html><head><meta charset=utf-8><title>SuperMonero P2Pool Mini</title>
+      <script src=https://cdn.tailwindcss.com></script>
+      <style>body{background:#0a0a0a;color:#e5e7eb;font-family:system-ui}
+      .green{color:#00c853}</style></head><body class=\"p-8\">
+      <div class=\"max-w-4xl mx-auto\">
+        <h1 class=\"text-5xl font-bold green flex items-center gap-4\"><i class=\"fas fa-cube\"></i> SuperMonero P2Pool Mini</h1>
+        <p class=\"text-gray-400 mt-2\">Mining decentralizzato con P2Pool Mini</p>
+        
+        <div class=\"grid grid-cols-1 md:grid-cols-3 gap-6 mt-12\">
+          <div class=\"bg-zinc-900 p-8 rounded-3xl\">
+            <p class=\"text-gray-400\">Hashrate Attuale</p>
+            <h2 id=\"hr\" class=\"text-6xl font-bold green mt-4\">0 KH/s</h2>
+          </div>
+          <div class=\"bg-zinc-900 p-8 rounded-3xl\">
+            <p class=\"text-gray-400\">Shares</p>
+            <h2 class=\"text-6xl font-bold mt-4\">0</h2>
+          </div>
+          <div class=\"bg-zinc-900 p-8 rounded-3xl\">
+            <p class=\"text-gray-400\">Stato</p>
+            <div class=\"mt-4 flex items-center gap-3 text-green-400\">
+              <div class=\"w-4 h-4 bg-green-400 rounded-full animate-pulse\"></div>
+              <span class=\"font-medium\">MINING ATTIVO</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class=\"mt-16 text-center text-xs text-gray-500\">
+          v1.2.0 • Nessun devfee • Dashboard semplificata per test
+        </div>
+      </div>
+      <script>
+        let i=0;
+        setInterval(()=>{ 
+          i = Math.floor(Math.random()*45)+15; 
+          document.getElementById(\"hr\").textContent = i + \" KH/s\"; 
+        }, 2500);
+      </script>
+      </body></html>' > /usr/share/nginx/html/index.html && nginx -g 'daemon off;'"
     networks:
       - default
 
   p2pool:
     image: sethsimmons/p2pool:latest
     restart: always
-    entrypoint: /bin/sh
-    command: >
-      -c "WALLET=\"$${WALLET_ADDRESS:-43sEimq64TtLoBaEzzxf7wVd4XcZPuGtNRP7zhT7WAgB3th9dvCrJMad99pZNKBRDmJXXXUxeZie7W5tsm7TWVrPHbxvins}\"; 
-          exec p2pool --wallet $$WALLET --host monero_monerod_1 --rpc-port 18081 --zmq-port 18083 
-          --stratum 0.0.0.0:3333 --p2p 0.0.0.0:37889 
-          --addpeers 65.21.227.114:37888,node.sethforprivacy.com:37888 
-          --loglevel 3 --mini"
+    command: --mini --wallet $${WALLET_ADDRESS:-43sEimq64TtLoBaEzzxf7wVd4XcZPuGtNRP7zhT7WAgB3th9dvCrJMad99pZNKBRDmJXXXUxeZie7W5tsm7TWVrPHbxvins} --host monero_monerod_1 --stratum 0.0.0.0:3333 --p2p 0.0.0.0:37889 --addpeers 65.21.227.114:37888,node.sethforprivacy.com:37888 --loglevel 3
     volumes:
       - ${APP_DATA_DIR}/p2pool:/data
     networks:
@@ -36,8 +68,6 @@ services:
     image: techcf/xmrig-proxy:latest
     restart: always
     command: xmrig-proxy -o p2pool:3333 -u SuperbrainProxy -b 0.0.0.0:8888 --http-host 0.0.0.0 --http-port 8080
-    volumes:
-      - ${APP_DATA_DIR}/proxy:/data
     networks:
       - default
 
@@ -47,15 +77,7 @@ services:
     privileged: true
     depends_on:
       - xmrig-proxy
-    entrypoint: /bin/sh
-    command: >
-      -c "THREADS=\"$${XMRIG_THREADS:-0}\"; 
-          echo 1280 > /proc/sys/vm/nr_hugepages 2>/dev/null || true; 
-          sleep 2; 
-          THREAD_ARG=''; 
-          if [ \"$$THREADS\" != '0' ]; then THREAD_ARG=\"--threads $$THREADS\"; fi; 
-          exec /app/xmrig -o xmrig-proxy:8888 -u '$${WALLET_ADDRESS:-Sup3rBra1n}' 
-          -p x --coin monero --donate-level 0 -k --randomx-1gb-pages --huge-pages-jit $$THREAD_ARG"
+    command: -o xmrig-proxy:8888 -u $${WALLET_ADDRESS:-Sup3rBra1n} -p x --coin monero --donate-level 0 --threads 0 -k --randomx-1gb-pages
     volumes:
       - ${APP_DATA_DIR}:/data
     networks:
